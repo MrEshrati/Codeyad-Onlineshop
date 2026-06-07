@@ -4,6 +4,7 @@ const User = require("../models/user.model");
 const sendEmail = require("../util/email");
 const crypto = require("crypto");
 const { log } = require("console");
+const { validationResult } = require("express-validator");
 
 exports.getLogin = (req, res) => {
   res.render("auth/login", {
@@ -50,13 +51,32 @@ exports.getSignup = (req, res) => {
     path: "/signup",
     pageTitle: "Signup",
     errorMessage: req.flash("error"),
+    oldInput: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
 };
 
 exports.postSignup = (req, res) => {
+  const errors = validationResult(req);
   const email = req.body.email;
   const password = req.body.password;
   const confirmPassword = req.body.confirmPassword;
+  if (!errors.isEmpty()) {
+    console.log(errors.array());
+    return res.render("auth/signup", {
+      path: "/signup",
+      pageTitle: "Signup",
+      errorMessage: errors.array()[0].msg,
+      oldInput: {
+        email: email,
+        password: password,
+        confirmPassword: confirmPassword,
+      },
+    });
+  }
 
   User.findOne({ email: email })
     .then((userDoc) => {
@@ -165,24 +185,24 @@ exports.postUpdatePassword = (req, res) => {
     ResetTokenExpireDate: {
       $gt: Date.now(),
     },
-    _id:userId,
-  }).then(
-    user => {
+    _id: userId,
+  })
+    .then((user) => {
       selectedUser = user;
-      return bcrypt.hash(newPass,12);
-    }
-  ).then(hashedPass => {
-
-    selectedUser.password = hashedPass;
-    selectedUser.resetToken = undefined;
-    selectedUser.ResetTokenExpireDate = undefined;
-    return selectedUser.save();
-  }).then(result => {
-
-    req.flash("success","Your password has successfuly updated");
-    res.redirect('/login');
-  }).catch(err => {
-    req.flash("error","There was an error updating your password");
-    res.redirect('/reset-password');
-  });
+      return bcrypt.hash(newPass, 12);
+    })
+    .then((hashedPass) => {
+      selectedUser.password = hashedPass;
+      selectedUser.resetToken = undefined;
+      selectedUser.ResetTokenExpireDate = undefined;
+      return selectedUser.save();
+    })
+    .then((result) => {
+      req.flash("success", "Your password has successfuly updated");
+      res.redirect("/login");
+    })
+    .catch((err) => {
+      req.flash("error", "There was an error updating your password");
+      res.redirect("/reset-password");
+    });
 };

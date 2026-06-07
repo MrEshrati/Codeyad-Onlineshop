@@ -17,6 +17,7 @@
               <input type="hidden" name="_csrf" value="<%= csrfToken %>">
               <div class="form-outline mb-4">
                 <input
+                  value="<%= oldInput.email  %>"
                   name="email"
                   type="email"
                   id="typeEmailX-2"
@@ -27,6 +28,7 @@
 
               <div class="form-outline mb-4">
                 <input
+                  value="<%= oldInput.password  %>"
                   name="password"
                   type="password"
                   id="typePasswordX-2"
@@ -37,6 +39,7 @@
 
               <div class="form-outline mb-4">
                 <input
+                  value="<%= oldInput.confirmPassword %>"
                   name="confirmPassword"
                   type="confirmPassword"
                   id="typePasswordX-2"
