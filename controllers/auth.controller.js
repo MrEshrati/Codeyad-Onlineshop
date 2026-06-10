@@ -56,6 +56,7 @@ exports.getSignup = (req, res) => {
       password: "",
       confirmPassword: "",
     },
+    validationErrors: validationResult(req).array(),
   });
 };
 
@@ -65,7 +66,6 @@ exports.postSignup = (req, res) => {
   const password = req.body.password;
   const confirmPassword = req.body.confirmPassword;
   if (!errors.isEmpty()) {
-    console.log(errors.array());
     return res.render("auth/signup", {
       path: "/signup",
       pageTitle: "Signup",
@@ -75,6 +75,7 @@ exports.postSignup = (req, res) => {
         password: password,
         confirmPassword: confirmPassword,
       },
+      validationErrors: errors.array(),
     });
   }
 

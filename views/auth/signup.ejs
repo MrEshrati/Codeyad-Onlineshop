@@ -21,7 +21,7 @@
                   name="email"
                   type="email"
                   id="typeEmailX-2"
-                  class="form-control form-control-lg"
+                  class="form-control form-control-lg <%= validationErrors.find(e => e.path === 'email') ? 'alert-danger' : '' %>"
                   placeholder="نام کاربری یا ایمیل خود را وارد کنید"
                 />
               </div>
@@ -32,7 +32,7 @@
                   name="password"
                   type="password"
                   id="typePasswordX-2"
-                  class="form-control form-control-lg"
+                  class="form-control form-control-lg <%= validationErrors.find(e => e.path === 'password') ? 'alert-danger' : '' %>"
                   placeholder="رمز عبور را وارد کنید"
                 />
               </div>
@@ -43,7 +43,7 @@
                   name="confirmPassword"
                   type="confirmPassword"
                   id="typePasswordX-2"
-                  class="form-control form-control-lg"
+                  class="form-control form-control-lg <%= validationErrors.find(e => e.path === 'confirmPassword') ? 'alert-danger' : '' %>"
                   placeholder="رمز عبور را تکرار کنید"
                 />
               </div>
