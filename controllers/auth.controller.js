@@ -12,6 +12,7 @@ exports.getLogin = (req, res) => {
     pageTitle: "Login",
     errorMessage: req.flash("error"),
     successMessage: req.flash("success"),
+    validationErrors: validationResult(req).array(),
   });
 };
 
@@ -26,7 +27,7 @@ exports.postLogin = (req, res) => {
       pageTitle: "Login",
       errorMessage: errors.array()[0].msg,
       successMessage: req.flash("success"),
-
+      validationErrors: errors.array(),
     });
   }
 

@@ -14,15 +14,41 @@ router.get(
 router.post(
   "/add-product",
   [
-    body("title").isString().isLength({ min: 3 }).trim(),
-    body("imageUrl").isURL(),
-    body("price").isFloat(),
-    body("description").toString().isLength({ min: 5, max: 500 }).trim(),
+    body("title")
+      .isString()
+      .isLength({ min: 3 })
+      .trim()
+      .withMessage("Invalid Title"),
+    body("imageUrl").isURL().withMessage("Invalid image Url"),
+    body("price").isFloat().withMessage("Invalid Price"),
+    body("description")
+      .isString()
+      .isLength({ min: 5, max: 500 })
+      .trim()
+      .withMessage("Invalid Description"),
   ],
   isAuthenticated,
   adminController.postAddProduct,
 );
-router.post("/edit-product", isAuthenticated, adminController.postEditProduct);
+router.post(
+  "/edit-product",
+  [
+    body("title")
+      .isString()
+      .isLength({ min: 3 })
+      .trim()
+      .withMessage("Invalid Title"),
+    body("imageUrl").isURL().withMessage("Invalid image Url"),
+    body("price").isFloat().withMessage("Invalid Price"),
+    body("description")
+      .isString()
+      .isLength({ min: 5, max: 500 })
+      .trim()
+      .withMessage("Invalid Description"),
+  ],
+  isAuthenticated,
+  adminController.postEditProduct,
+);
 router.post("/delete-product", isAuthenticated, adminController.deleteProduct);
 
 module.exports = router;
