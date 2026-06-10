@@ -36,13 +36,19 @@ exports.postAddProduct = (req, res) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-
     return res.render("admin/add-product", {
       path: "/admin/add-product",
       pageTitle: "Add Product",
       editing: false,
       isAuthenticated: req.session.isLoggedIn,
-      
+      product: {
+        title: title,
+        imageUrl: imageUrl,
+        price: price,
+        description: description,
+      },
+      errorMessage: errors.array()[0].msg,
+      hasError: true,
     });
   }
 
