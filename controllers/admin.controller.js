@@ -1,5 +1,6 @@
 const Product = require("../models/product.model");
 const cookieParser = require("../util/cookieparser");
+const { validationResult } = require("express-validator");
 
 exports.getProducts = (req, res) => {
   Product.find({
@@ -32,6 +33,18 @@ exports.postAddProduct = (req, res) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+
+    return res.render("admin/add-product", {
+      path: "/admin/add-product",
+      pageTitle: "Add Product",
+      editing: false,
+      isAuthenticated: req.session.isLoggedIn,
+      
+    });
+  }
 
   const newProduct = new Product({
     title: title,

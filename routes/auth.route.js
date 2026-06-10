@@ -8,7 +8,17 @@ router.get("/login", authController.getLogin);
 router.get("/signup", authController.getSignup);
 router.get("/reset-password", authController.getResetPass);
 router.get("/reset-password/:token", authController.getUpdatePassword);
-router.post("/login", authController.postLogin);
+router.post(
+  "/login",
+  [
+    check("email").isEmail().withMessage("Email is not valid").normalizeEmail(),
+    check("password", "Please enter a valid password")
+      .isLength({ min: 5, max: 25 })
+      .isAlphanumeric()
+      .trim(),
+  ],
+  authController.postLogin,
+);
 router.post(
   "/signup",
   [
@@ -21,20 +31,25 @@ router.post(
         }
 
         return true;
-      }),
+      })
+      .normalizeEmail()
+      .trim(),
     body(
       "password",
       "Password must be bigger than 5 letter and must contain lowercase and uppercase letters and have number and symbols",
     )
       .isLength({ min: 5 })
-      .isAlphanumeric(),
-    body("confirmPassword").custom((value, { req }) => {
-      if (value !== req.body.password) {
-        throw new Error("Passwords do not match");
-      }
+      .isAlphanumeric()
+      .trim(),
+    body("confirmPassword")
+      .custom((value, { req }) => {
+        if (value !== req.body.password) {
+          throw new Error("Passwords do not match");
+        }
 
-      return true;
-    }),
+        return true;
+      })
+      .trim(),
   ],
   authController.postSignup,
 );
