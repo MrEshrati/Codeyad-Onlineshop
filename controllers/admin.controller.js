@@ -2,7 +2,7 @@ const Product = require("../models/product.model");
 const cookieParser = require("../util/cookieparser");
 const { validationResult } = require("express-validator");
 
-exports.getProducts = (req, res) => {
+exports.getProducts = (req, res, next) => {
   Product.find({
     userId: req.user._id,
   })
@@ -15,7 +15,9 @@ exports.getProducts = (req, res) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
@@ -30,7 +32,7 @@ exports.getAddProduct = (req, res) => {
   });
 };
 
-exports.postAddProduct = (req, res) => {
+exports.postAddProduct = (req, res, next) => {
   const title = req.body.title;
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
@@ -64,13 +66,20 @@ exports.postAddProduct = (req, res) => {
     userId: req.user,
   });
 
-  newProduct.save().then((result) => {
-    console.log("Product Created");
-    res.redirect("/");
-  });
+  newProduct
+    .save()
+    .then((result) => {
+      console.log("Product Created");
+      res.redirect("/");
+    })
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
 
-exports.getEditProduct = (req, res) => {
+exports.getEditProduct = (req, res, next) => {
   const editMode = req.query.edit;
 
   if (!editMode) {
@@ -96,11 +105,13 @@ exports.getEditProduct = (req, res) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
-exports.postEditProduct = (req, res) => {
+exports.postEditProduct = (req, res, next) => {
   const prodId = req.body.productId;
 
   const updatedTitle = req.body.title;
@@ -121,7 +132,7 @@ exports.postEditProduct = (req, res) => {
         imageUrl: updatedImageUrl,
         price: updatedPrice,
         description: updatedDescription,
-        _id:prodId,
+        _id: prodId,
       },
       errorMessage: errors.array()[0].msg,
       hasError: true,
@@ -129,23 +140,29 @@ exports.postEditProduct = (req, res) => {
     });
   }
 
-  Product.findById(prodId).then((p) => {
-    if (p.userId.toString() !== req.user._id.toString()) {
-      return res.redirect("/");
-    }
-    p.title = updatedTitle;
-    p.description = updatedDescription;
-    p.price = updatedPrice;
-    p.imageUrl = updatedImageUrl;
+  Product.findById(prodId)
+    .then((p) => {
+      if (p.userId.toString() !== req.user._id.toString()) {
+        return res.redirect("/");
+      }
+      p.title = updatedTitle;
+      p.description = updatedDescription;
+      p.price = updatedPrice;
+      p.imageUrl = updatedImageUrl;
 
-    return p.save().then((r) => {
-      console.log("Product Updated");
-      res.redirect("/");
+      return p.save().then((r) => {
+        console.log("Product Updated");
+        res.redirect("/");
+      });
+    })
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
-  });
 };
 
-exports.deleteProduct = (req, res) => {
+exports.deleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
 
   Product.deleteOne({ _id: prodId, userId: req.user._id })
@@ -154,6 +171,8 @@ exports.deleteProduct = (req, res) => {
       res.redirect("/admin/products");
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };

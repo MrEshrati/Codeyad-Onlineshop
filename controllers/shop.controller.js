@@ -2,7 +2,7 @@ const Product = require("../models/product.model");
 const Order = require("../models/order.model");
 const cookieParser = require("../util/cookieparser");
 
-exports.getHome = (req, res) => {
+exports.getHome = (req, res, next) => {
   Product.find()
     .then((p) => {
       res.render("shop/index", {
@@ -13,12 +13,14 @@ exports.getHome = (req, res) => {
         // csrfToken: req.csrfToken(),
       });
     })
-    .catch((e) => {
-      console.log(e);
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
-exports.getProducts = (req, res) => {
+exports.getProducts = (req, res, next) => {
   Product.find()
     .then((p) => {
       res.render("shop/product-list", {
@@ -29,12 +31,14 @@ exports.getProducts = (req, res) => {
         // csrfToken: req.csrfToken(),
       });
     })
-    .catch((e) => {
-      console.log(e);
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
-exports.getProduct = (req, res) => {
+exports.getProduct = (req, res, next) => {
   const prodId = req.params.productId;
 
   Product.findById(prodId)
@@ -47,7 +51,9 @@ exports.getProduct = (req, res) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
@@ -71,7 +77,7 @@ exports.getCart = async (req, res) => {
   });
 };
 
-exports.postRemovefromCart = (req, res) => {
+exports.postRemovefromCart = (req, res, next) => {
   const prodId = req.body.productId;
   req.user
     .removeFromCart(prodId)
@@ -79,11 +85,13 @@ exports.postRemovefromCart = (req, res) => {
       res.redirect("/cart");
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
-exports.postOrder = (req, res) => {
+exports.postOrder = (req, res, next) => {
   req.user
     .populate("cart.items.productId")
     .then((user) => {
@@ -108,11 +116,13 @@ exports.postOrder = (req, res) => {
       res.redirect("/orders");
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
-exports.getOrders = (req, res) => {
+exports.getOrders = (req, res, next) => {
   Order.find({ "user.userId": req.user._id })
     .then((orders) => {
       res.render("shop/orders", {
@@ -123,6 +133,8 @@ exports.getOrders = (req, res) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };

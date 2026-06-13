@@ -16,7 +16,7 @@ exports.getLogin = (req, res) => {
   });
 };
 
-exports.postLogin = (req, res) => {
+exports.postLogin = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   const errors = validationResult(req);
@@ -37,18 +37,25 @@ exports.postLogin = (req, res) => {
       return res.redirect("/login");
     }
 
-    bcrypt.compare(password, user.password).then((match) => {
-      if (match) {
-        req.session.isLoggedIn = true;
-        req.session.user = user;
-        return req.session.save((err) => {
-          console.log(err);
-          res.redirect("/");
-        });
-      }
-      req.flash("error", "Email/Password is incorrect");
-      res.redirect("/login");
-    });
+    bcrypt
+      .compare(password, user.password)
+      .then((match) => {
+        if (match) {
+          req.session.isLoggedIn = true;
+          req.session.user = user;
+          return req.session.save((err) => {
+            console.log(err);
+            res.redirect("/");
+          });
+        }
+        req.flash("error", "Email/Password is incorrect");
+        res.redirect("/login");
+      })
+      .catch((err) => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+      });
   });
 };
 
@@ -72,7 +79,7 @@ exports.getSignup = (req, res) => {
   });
 };
 
-exports.postSignup = (req, res) => {
+exports.postSignup = (req, res, next) => {
   const errors = validationResult(req);
   const email = req.body.email;
   const password = req.body.password;
@@ -117,8 +124,10 @@ exports.postSignup = (req, res) => {
       });
       res.redirect("/login");
     })
-    .catch((e) => {
-      console.log(e);
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
@@ -131,7 +140,7 @@ exports.getResetPass = (req, res) => {
   });
 };
 
-exports.postResetPass = (req, res) => {
+exports.postResetPass = (req, res, next) => {
   crypto.randomBytes(32, (err, buf) => {
     if (err) {
       console.log(err);
@@ -139,28 +148,34 @@ exports.postResetPass = (req, res) => {
     }
 
     const token = buf.toString("hex");
-    User.findOne({ email: req.body.email }).then((user) => {
-      if (!user) {
-        req.flash("error", "No User with this email found");
-        return res.redirect("/reset-password");
-      }
+    User.findOne({ email: req.body.email })
+      .then((user) => {
+        if (!user) {
+          req.flash("error", "No User with this email found");
+          return res.redirect("/reset-password");
+        }
 
-      req.flash("success", "An Email containing the reset link was sent");
-      res.redirect("/reset-password");
-      sendEmail({
-        userEmail: req.body.email,
-        subject: "بازیابی رمز عبور",
-        html: `<p>درخواست بازیابی رمز عبور</p>
+        req.flash("success", "An Email containing the reset link was sent");
+        res.redirect("/reset-password");
+        sendEmail({
+          userEmail: req.body.email,
+          subject: "بازیابی رمز عبور",
+          html: `<p>درخواست بازیابی رمز عبور</p>
         <p>برای بازیابی رمز عبور روی لینک کلیک کنید. <a href="http://localhost:3000/reset-password/${token}">لینک</a></p>`,
+        });
+        user.resetToken = token;
+        user.ResetTokenExpireDate = Date.now() + 3600000;
+        return user.save();
+      })
+      .catch((err) => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
       });
-      user.resetToken = token;
-      user.ResetTokenExpireDate = Date.now() + 3600000;
-      return user.save();
-    });
   });
 };
 
-exports.getUpdatePassword = (req, res) => {
+exports.getUpdatePassword = (req, res, next) => {
   const token = req.params.token;
 
   User.findOne({
@@ -183,11 +198,13 @@ exports.getUpdatePassword = (req, res) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
-exports.postUpdatePassword = (req, res) => {
+exports.postUpdatePassword = (req, res, next) => {
   const newPass = req.body.password;
   const userId = req.body.userId;
   const passwordToken = req.body.passwordToken;

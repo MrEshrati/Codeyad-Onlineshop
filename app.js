@@ -9,6 +9,8 @@ const MongoDBSession = require("connect-mongodb-session")(session);
 const csrf = require("csurf");
 const flash = require("connect-flash");
 
+const errorController = require("./controllers/error.controller");
+
 const MONGODB_URI = "mongodb://localhost/OnlineShop";
 
 const app = express();
@@ -46,24 +48,37 @@ app.use(csrfProtection);
 app.use(flash());
 
 app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
+
+app.use((req, res, next) => {
   if (!req.session.user) {
     return next();
   }
 
   User.findById(req.session.user._id)
     .then((user) => {
+      if (!user) {
+        return next();
+      }
       req.user = user;
       next();
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 });
 
-app.use((req, res, next) => {
-  res.locals.isAuthenticated = req.session.isLoggedIn;
-  res.locals.csrfToken = req.csrfToken();
-  next();
+app.use((error, req, res, next) => {
+  return res.status(500).render("500", {
+    pageTitle: "Error",
+    path: "/500",
+    isAuthenticated: req.session.isLoggedIn,
+  });
 });
 
 app.use("/admin", adminRouter);
@@ -73,13 +88,14 @@ app.use(authRouter);
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "index.html"));
 });
+app.get("/500", errorController.get500);
 
 mongoose
   .connect(MONGODB_URI)
   .then((res) => {
     User.findOne().then((user) => {
       if (!user) {
-        const password = "REDACTED"
+        const password = "REDACTED";
         return bcrypt.hash(password, 12).then((hashedPassword) => {
           const user = new User({
             // name: "Arshia"
