@@ -41,12 +41,11 @@
       <div class="form-group">
         <label for="title">آدرس عکس</label>
         <input
-          type="text"
-          class="form-control <%= validationErrors.find(e => e.path === 'imageUrl') ? 'alert-danger' : '' %>"
-          id="imageUrl"
-          name="imageUrl"
+          type="file"
+          class="form-control"
+          id="image"
+          name="image"
           placeholder="عکس محصول را وارد کنید"
-          value="<% if(editing || hasError) { %><%= product.imageUrl %><% }%>"
         />
       </div>
       <div class="form-group">
