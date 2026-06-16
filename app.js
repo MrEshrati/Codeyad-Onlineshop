@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
+const multer = require("multer");
 const mongoose = require("mongoose");
 const User = require("./models/user.model");
 const bcrypt = require("bcryptjs");
@@ -28,11 +29,21 @@ const adminRouter = require("./routes/admin.route");
 const shopRouter = require("./routes/shop.route");
 const authRouter = require("./routes/auth.route");
 
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toDateString() + "_" + file.originalname);
+  },
+});
+
 app.use(
   bodyParser.urlencoded({
     extended: false,
   }),
 );
+app.use(multer({ storage: fileStorage }).single("image"));
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
