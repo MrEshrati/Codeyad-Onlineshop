@@ -19,7 +19,6 @@ router.post(
       .isLength({ min: 3 })
       .trim()
       .withMessage("Invalid Title"),
-    body("imageUrl").isURL().withMessage("Invalid image Url"),
     body("price").isFloat().withMessage("Invalid Price"),
     body("description")
       .isString()
@@ -38,7 +37,6 @@ router.post(
       .isLength({ min: 3 })
       .trim()
       .withMessage("Invalid Title"),
-    body("imageUrl").isURL().withMessage("Invalid image Url"),
     body("price").isFloat().withMessage("Invalid Price"),
     body("description")
       .isString()

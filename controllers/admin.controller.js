@@ -34,13 +34,12 @@ exports.getAddProduct = (req, res) => {
 
 exports.postAddProduct = (req, res, next) => {
   const title = req.body.title;
-  const imageUrl = req.file;
+  const image = req.file;
   const price = req.body.price;
   const description = req.body.description;
   const errors = validationResult(req);
 
-  if (!errors.isEmpty()) {
-    console.log(errors.array());
+  if(!image){
     return res.render("admin/add-product", {
       path: "/admin/add-product",
       pageTitle: "Add Product",
@@ -48,7 +47,25 @@ exports.postAddProduct = (req, res, next) => {
       isAuthenticated: req.session.isLoggedIn,
       product: {
         title: title,
-        imageUrl: imageUrl,
+        imageUrl: image,
+        price: price,
+        description: description,
+      },
+      errorMessage: "Please enter a supported format(JPG,JPEG,PNG)",
+      hasError: true,
+      validationErrors: [],
+    });
+  }
+
+  if (!errors.isEmpty()) {
+    return res.render("admin/add-product", {
+      path: "/admin/add-product",
+      pageTitle: "Add Product",
+      editing: false,
+      isAuthenticated: req.session.isLoggedIn,
+      product: {
+        title: title,
+        imageUrl: image,
         price: price,
         description: description,
       },
@@ -61,7 +78,7 @@ exports.postAddProduct = (req, res, next) => {
   const newProduct = new Product({
     title: title,
     price: price,
-    imageUrl: imageUrl,
+    imageUrl: image.path,
     description: description,
     userId: req.user,
   });
@@ -115,7 +132,7 @@ exports.postEditProduct = (req, res, next) => {
   const prodId = req.body.productId;
 
   const updatedTitle = req.body.title;
-  const updatedImageUrl = req.body.imageUrl;
+  const updatedImage = req.file;
   const updatedPrice = req.body.price;
   const updatedDescription = req.body.description;
   const errors = validationResult(req);
@@ -129,7 +146,6 @@ exports.postEditProduct = (req, res, next) => {
       isAuthenticated: req.session.isLoggedIn,
       product: {
         title: updatedTitle,
-        imageUrl: updatedImageUrl,
         price: updatedPrice,
         description: updatedDescription,
         _id: prodId,
@@ -148,8 +164,9 @@ exports.postEditProduct = (req, res, next) => {
       p.title = updatedTitle;
       p.description = updatedDescription;
       p.price = updatedPrice;
-      p.imageUrl = updatedImageUrl;
-
+      if(updatedImage){
+        p.imageUrl = updatedImage.path;
+      }
       return p.save().then((r) => {
         console.log("Product Updated");
         res.redirect("/");
