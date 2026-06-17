@@ -1,6 +1,7 @@
 const Product = require("../models/product.model");
 const cookieParser = require("../util/cookieparser");
 const { validationResult } = require("express-validator");
+const fileController = require("../util/fileController");
 
 exports.getProducts = (req, res, next) => {
   Product.find({
@@ -39,7 +40,7 @@ exports.postAddProduct = (req, res, next) => {
   const description = req.body.description;
   const errors = validationResult(req);
 
-  if(!image){
+  if (!image) {
     return res.render("admin/add-product", {
       path: "/admin/add-product",
       pageTitle: "Add Product",
@@ -164,7 +165,8 @@ exports.postEditProduct = (req, res, next) => {
       p.title = updatedTitle;
       p.description = updatedDescription;
       p.price = updatedPrice;
-      if(updatedImage){
+      if (updatedImage) {
+        fileController.deleteFile(p.imageUrl);
         p.imageUrl = updatedImage.path;
       }
       return p.save().then((r) => {
@@ -182,9 +184,16 @@ exports.postEditProduct = (req, res, next) => {
 exports.deleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
 
-  Product.deleteOne({ _id: prodId, userId: req.user._id })
+  Product.findById(prodId)
+    .then((p) => {
+      if (!p) {
+        return next(new Error("Product not found!"));
+      }
+
+      fileController.deleteFile(p.imageUrl);
+      return Product.deleteOne({ _id: prodId, userId: req.user._id });
+    })
     .then((result) => {
-      console.log("Product Deleted");
       res.redirect("/admin/products");
     })
     .catch((err) => {
