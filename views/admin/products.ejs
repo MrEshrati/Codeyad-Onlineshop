@@ -22,11 +22,10 @@
           </div>
           <div class="card__actions">
             <a href="/admin/edit-product/<%= product._id %>?edit=true" class="btn btn-warning">ویرایش</a>
-            <form action="/admin/delete-product" method="post">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-              <input type="hidden" name="productId" value="<%= product._id %>"></input>
-              <button type="submit" class="btn btn-danger">حذف</button>
-            </form>
+            
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="productId" value="<%= product._id %>"></input>
+            <button type="button" onclick="deleteProduct(this)" class="btn btn-danger">حذف</button>
           </div>
         </article>
 

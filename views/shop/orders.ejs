@@ -2,6 +2,11 @@
 <%- include('../includes/nav.ejs') %>
 
 <main>
+    <% if(refId) { %>
+        <div class="alert alert-success">
+            <h4>Payment Successful<hr>Payment Id: <%= refId %></h4>
+        </div>
+    <% } %>
     <% if(orders.length > 0) { %>
         <ul class="orders">
             <% orders.forEach(order => { %>

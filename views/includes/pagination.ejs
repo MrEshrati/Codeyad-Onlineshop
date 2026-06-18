@@ -1,0 +1,36 @@
+    <section>
+        <div class="d-flex justify-content-center">
+            <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                    <% if(hasPreviousPage) {%>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<%= previousPage %>" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    <% } %>
+
+                    <% if(currentPage !== 1) { %> 
+                        <li class="page-item"><a class="page-link" href="?page=1">1</a></li>
+                    <% } %>
+                    <li class="page-item active"><a class="page-link" href="?page=<%= currentPage %>"><%= currentPage %></a></li>
+
+                    <% if(lastPage !== currentPage && nextPage !== lastPage) { %>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<%= lastPage %>" aria-label="Next">
+                                <span aria-hidden="true"><%= lastPage %></span>
+                            </a>
+                        </li>
+                    <% } %>
+                    <% if(hasNextPage) { %>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<%= nextPage %>" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    <% } %> 
+
+                </ul>
+            </nav>
+        </div>
+    </section>

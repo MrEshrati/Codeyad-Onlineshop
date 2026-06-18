@@ -9,10 +9,16 @@ const session = require("express-session");
 const MongoDBSession = require("connect-mongodb-session")(session);
 const csrf = require("csurf");
 const flash = require("connect-flash");
+require("dotenv").config();
+
+const HOST = process.env.HOST;
+const PORT = process.env.PORT || 3000;
+const DATABASE_NAME = process.env.DATABASE_NAME;
+const DATABASE_HOST = process.env.DATABASE_HOST;
 
 const errorController = require("./controllers/error.controller");
 
-const MONGODB_URI = "mongodb://localhost/OnlineShop";
+const MONGODB_URI = `mongodb://${HOST}/${DATABASE_NAME}`;
 
 const app = express();
 const store = new MongoDBSession({
@@ -60,7 +66,7 @@ app.use(
 );
 
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/images",express.static(path.join(__dirname, "images")));
+app.use("/images", express.static(path.join(__dirname, "images")));
 app.use(
   session({
     secret: "REDACTED",
@@ -134,8 +140,8 @@ mongoose
       }
     });
 
-    app.listen(3000, () => {
-      console.log("Listening on PORT 3000");
+    app.listen(PORT, () => {
+      console.log(`Listening on PORT ${PORT}`);
     });
   })
   .catch((err) => {
