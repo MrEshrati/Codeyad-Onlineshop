@@ -121,6 +121,8 @@ exports.postSignup = (req, res, next) => {
         // text: "You are signed up!!!!",
         html: `<h1>You are signed up!!!</h1>`,
         userEmail: email,
+      }).catch(() => {
+        console.warn("Signup email could not be sent.");
       });
       res.redirect("/login");
     })
@@ -149,23 +151,29 @@ exports.postResetPass = (req, res, next) => {
 
     const token = buf.toString("hex");
     User.findOne({ email: req.body.email })
-      .then((user) => {
+      .then(async (user) => {
         if (!user) {
           req.flash("error", "No User with this email found");
           return res.redirect("/reset-password");
         }
 
-        req.flash("success", "An Email containing the reset link was sent");
-        res.redirect("/reset-password");
-        sendEmail({
-          userEmail: req.body.email,
-          subject: "بازیابی رمز عبور",
-          html: `<p>درخواست بازیابی رمز عبور</p>
-        <p>برای بازیابی رمز عبور روی لینک کلیک کنید. <a href="http://localhost:3000/reset-password/${token}">لینک</a></p>`,
-        });
         user.resetToken = token;
         user.ResetTokenExpireDate = Date.now() + 3600000;
-        return user.save();
+        await user.save();
+
+        try {
+          await sendEmail({
+            userEmail: req.body.email,
+            subject: "بازیابی رمز عبور",
+            html: `<p>درخواست بازیابی رمز عبور</p>
+        <p>برای بازیابی رمز عبور روی لینک کلیک کنید. <a href="http://localhost:3000/reset-password/${token}">لینک</a></p>`,
+          });
+          req.flash("success", "An Email containing the reset link was sent");
+        } catch {
+          req.flash("error", "Password reset email could not be sent");
+        }
+
+        return res.redirect("/reset-password");
       })
       .catch((err) => {
         const error = new Error(err);

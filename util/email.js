@@ -1,17 +1,22 @@
 const nodemailer = require("nodemailer");
 
 const sendEmail = async (option) => {
-  var transport = nodemailer.createTransport({
+  const { SMTP_USER, SMTP_PASSWORD, SMTP_FROM } = process.env;
+  if (!SMTP_USER || !SMTP_PASSWORD || !SMTP_FROM) {
+    throw new Error("SMTP credentials and sender are required to send mail.");
+  }
+
+  const transport = nodemailer.createTransport({
     host: "sandbox.smtp.mailtrap.io",
     port: 2525,
     auth: {
-      user: "REDACTED",
-      pass: "REDACTED",
+      user: SMTP_USER,
+      pass: SMTP_PASSWORD,
     },
   });
 
   const mailOption = {
-    from: "REDACTED",
+    from: SMTP_FROM,
     to: option.userEmail,
     subject: option.subject,
     // text: option.text,

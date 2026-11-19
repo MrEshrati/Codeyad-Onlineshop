@@ -4,12 +4,16 @@ const bodyParser = require("body-parser");
 const multer = require("multer");
 const mongoose = require("mongoose");
 const User = require("./models/user.model");
-const bcrypt = require("bcryptjs");
 const session = require("express-session");
 const MongoDBSession = require("connect-mongodb-session")(session);
 const csrf = require("csurf");
 const flash = require("connect-flash");
 require("dotenv").config();
+
+const sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret?.trim()) {
+  throw new Error("Set SESSION_SECRET before starting the shop.");
+}
 
 const HOST = process.env.HOST;
 const PORT = process.env.PORT || 3000;
@@ -69,7 +73,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/images", express.static(path.join(__dirname, "images")));
 app.use(
   session({
-    secret: "REDACTED",
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     store: store,
@@ -124,22 +128,7 @@ app.get("/500", errorController.get500);
 
 mongoose
   .connect(MONGODB_URI)
-  .then((res) => {
-    User.findOne().then((user) => {
-      if (!user) {
-        const password = "REDACTED";
-        return bcrypt.hash(password, 12).then((hashedPassword) => {
-          const user = new User({
-            // name: "Arshia"
-            email: "REDACTED",
-            password: hashedPassword,
-            cart: { item: [] },
-          });
-          return user.save();
-        });
-      }
-    });
-
+  .then(() => {
     app.listen(PORT, () => {
       console.log(`Listening on PORT ${PORT}`);
     });

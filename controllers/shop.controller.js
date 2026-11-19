@@ -6,10 +6,8 @@ const fs = require("fs");
 const PDFDocument = require("pdfkit");
 const ZarinpalCheckout = require("zarinpal-checkout");
 
-var zarinpal = ZarinpalCheckout.create(
-  "REDACTED",
-  true,
-);
+const merchantId = process.env.ZARINPAL_MERCHANT_ID;
+const zarinpal = merchantId ? ZarinpalCheckout.create(merchantId, true) : null;
 const ITEMS_PER_PAGE = 2;
 let totalItems;
 
@@ -262,6 +260,10 @@ exports.getCheckout = async (req, res, next) => {
 };
 
 exports.getPayment = async (req, res, next) => {
+  if (!zarinpal) {
+    return res.status(503).send("Payment service is not configured.");
+  }
+
   const userProducts = await req.user.populate("cart.items.productId");
   const products = userProducts.cart.items;
   let totalPrice = 0;
@@ -286,6 +288,10 @@ exports.getPayment = async (req, res, next) => {
 };
 
 exports.checkPayment = async (req, res, next) => {
+  if (!zarinpal) {
+    return res.status(503).send("Payment service is not configured.");
+  }
+
   const authority = req.query.Authority;
   const status = req.query.Status;
 
