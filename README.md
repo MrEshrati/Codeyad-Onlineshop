@@ -12,3 +12,7 @@ An e-commerce course project built with Express, EJS templates, and MongoDB via 
 Treat this as a local course project. Email and payment flows require separate development configuration and service accounts.
 
 Create an account through the signup page. Configure `SMTP_USER`, `SMTP_PASSWORD`, and `SMTP_FROM` to send email. Set `ZARINPAL_MERCHANT_ID` to your sandbox merchant ID to use the payment example.
+
+## License
+
+The [ISC License](LICENSE) covers MrEshrati's original code and documentation, consistent with `package.json`. CodeYad course materials, third-party starter code, and bundled media are outside this grant.
